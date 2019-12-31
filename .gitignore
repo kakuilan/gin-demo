@@ -1,3 +1,14 @@
+# system or ide files
+.DS_Store
+.buildpath
+.git
+.gitee
+.idea
+.project
+.settings
+.user.ini
+.vscode
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -13,3 +24,24 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# other files
+*.bin
+*.cgo*.c
+*.cgo*.go
+*.log
+*.orig
+*.out
+*.patch
+*.pid
+*.pyc
+*.rej
+*~
+.*.swp
+._*
+.nfs.*
+_cgo_*
+_obj
+_test
+core
+thumbs.db
