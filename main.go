@@ -9,8 +9,10 @@ import (
 var db = make(map[string]string)
 
 func setupRouter() *gin.Engine {
-	// Disable Console Color
-	// gin.DisableConsoleColor()
+	// 禁止控制台日志颜色
+	gin.DisableConsoleColor()
+
+	// 创建默认的路由中间件
 	r := gin.Default()
 
 	// Ping test
