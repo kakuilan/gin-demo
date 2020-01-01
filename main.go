@@ -67,6 +67,15 @@ func setupRouter() *gin.Engine {
 		c.AsciiJSON(http.StatusOK, data)
 	})
 
+	// html渲染
+	r.LoadHTMLGlob("templates/*")
+	//router.LoadHTMLFiles("templates/template1.html", "templates/template2.html")
+	r.GET("/index", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl", gin.H{
+			"title": "Main website",
+		})
+	})
+
 	return r
 }
 
