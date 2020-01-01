@@ -158,6 +158,22 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	// 获取请求参数
+	//POST /post?id=1234&page=1 HTTP/1.1
+	//Content-Type: application/x-www-form-urlencoded
+	//post参数如
+	//name=manu&message=this_is_great
+	r.POST("/post", func(c *gin.Context) {
+		id := c.Query("id")
+		page := c.DefaultQuery("page", "0")
+		name := c.PostForm("name")
+		message := c.PostForm("message")
+
+		res := fmt.Sprintf("id: %s; page: %s; name: %s; message: %s", id, page, name, message)
+		c.JSON(200, gin.H{
+			"res": res,
+		})
+	})
 
 	return r
 }
