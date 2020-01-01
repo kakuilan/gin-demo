@@ -113,7 +113,7 @@ func setupRouter() *gin.Engine {
 		c.JSONP(http.StatusOK, data)
 	})
 
-	// Multipart/Urlencoded 绑定表单
+	// Multipart/Urlencoded 绑定表单参数
 	r.POST("/login", func(c *gin.Context) {
 		// 你可以使用显式绑定声明绑定 multipart form：
 		// c.ShouldBindWith(&form, binding.Form)
@@ -129,6 +129,19 @@ func setupRouter() *gin.Engine {
 			}
 		}
 	})
+
+	// Multipart/Urlencoded 表单-不强制绑定参数
+	r.POST("/form_post", func(c *gin.Context) {
+		message := c.PostForm("message")
+		nick := c.DefaultPostForm("nick", "anonymous") //默认值
+
+		c.JSON(200, gin.H{
+			"status":  "posted",
+			"message": message,
+			"nick":    nick,
+		})
+	})
+
 
 
 	return r
