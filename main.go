@@ -142,6 +142,21 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	// 提供 unicode 实体
+	r.GET("/json", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"html": "<b>Hello, world!</b>",
+			"cn": "<b>你好，世界！</b>",
+		})
+	})
+
+	// json-提供字面字符
+	r.GET("/purejson", func(c *gin.Context) {
+		c.PureJSON(200, gin.H{
+			"html": "<b>Hello, world!</b>",
+			"cn": "<b>你好，世界！</b>",
+		})
+	})
 
 
 	return r
