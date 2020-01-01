@@ -1,12 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
-
+	"time"
+	"html/template"
 	"github.com/gin-gonic/gin"
 )
 
 var db = make(map[string]string)
+
+func formatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
+}
 
 func setupRouter() *gin.Engine {
 	// 禁止控制台日志颜色
@@ -67,14 +74,28 @@ func setupRouter() *gin.Engine {
 		c.AsciiJSON(http.StatusOK, data)
 	})
 
-	// html渲染
+	// 注入模板函数
+	r.SetFuncMap(template.FuncMap{
+		"formatAsDate": formatAsDate,
+	})
 	r.LoadHTMLGlob("templates/*")
+
+	// html渲染
 	//router.LoadHTMLFiles("templates/template1.html", "templates/template2.html")
 	r.GET("/index", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"title": "Main website",
 		})
 	})
+
+	// 输出js
+	r.GET("/getjs", func(c *gin.Context) {
+		c.Header("Content-Type", "text/javascript;charset=UTF-8")
+		c.HTML(http.StatusOK, "getjs.tmpl", gin.H{
+			"now": time.Date(2017, 07, 01, 0, 0, 0, 0, time.UTC),
+		})
+	})
+
 
 	return r
 }
