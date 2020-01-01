@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 	"html/template"
@@ -159,19 +160,29 @@ func setupRouter() *gin.Engine {
 	})
 
 	// 获取请求参数
-	//POST /post?id=1234&page=1 HTTP/1.1
+	//POST /query?id=1234&page=1&ids[a]=1234&ids[b]=hello HTTP/1.1
 	//Content-Type: application/x-www-form-urlencoded
 	//post参数如
-	//name=manu&message=this_is_great
-	r.POST("/post", func(c *gin.Context) {
+	//name=manu&message=this_is_great&names[first]=thinkerou&names[second]=tianou
+	r.POST("/query", func(c *gin.Context) {
 		id := c.Query("id")
 		page := c.DefaultQuery("page", "0")
 		name := c.PostForm("name")
 		message := c.PostForm("message")
 
-		res := fmt.Sprintf("id: %s; page: %s; name: %s; message: %s", id, page, name, message)
+		//映射查询字符串或表单参数(数组)
+		ids := c.QueryMap("ids")
+		names := c.PostFormMap("names")
+
+		str := fmt.Sprintf("id: %s; page: %s; name: %s; message: %s", id, page, name, message)
 		c.JSON(200, gin.H{
-			"res": res,
+			"str": str,
+			"id": id,
+			"page": page,
+			"name": name,
+			"message": message,
+			"ids": ids,
+			"names": names,
 		})
 	})
 
@@ -184,6 +195,29 @@ func setupRouter() *gin.Engine {
 		c.SecureJSON(http.StatusOK, names)
 	})
 
+	// 上传单文件
+	// 为 multipart forms 设置较低的内存限制 (默认是 32 MiB)
+	// router.MaxMultipartMemory = 8 << 20  // 8 MiB
+	r.POST("/upload", func(c *gin.Context) {
+		// 单文件
+		file, _ := c.FormFile("file")
+		if file==nil{
+			c.JSON(200, gin.H{
+				"msg": "none upload file",
+			})
+		}else{
+			log.Println(file.Filename)
+
+			// 上传文件至指定目录
+			dst := "./" + file.Filename
+			err := c.SaveUploadedFile(file, dst)
+			if(err !=nil) {
+				log.Print(err.Error())
+			}
+
+			c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
+		}
+	})
 
 	return r
 }
