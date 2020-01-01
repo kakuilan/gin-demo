@@ -45,3 +45,6 @@ _obj
 _test
 core
 thumbs.db
+
+# just include vendor/vendor.json
+vendor/!vendor.json
