@@ -96,6 +96,16 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	// jsonp
+	r.GET("/jsonp", func(c *gin.Context) {
+		data := map[string]interface{}{
+			"foo": "bar",
+		}
+
+		// 访问 jsonp?callback=x
+		// 将输出：x({\"foo\":\"bar\"})
+		c.JSONP(http.StatusOK, data)
+	})
 
 	return r
 }
