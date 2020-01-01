@@ -15,6 +15,12 @@ func formatAsDate(t time.Time) string {
 	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
 }
 
+// 登录表单
+type LoginForm struct {
+	User     string `form:"user" binding:"required"`
+	Password string `form:"password" binding:"required"`
+}
+
 func setupRouter() *gin.Engine {
 	// 禁止控制台日志颜色
 	gin.DisableConsoleColor()
@@ -106,6 +112,24 @@ func setupRouter() *gin.Engine {
 		// 将输出：x({\"foo\":\"bar\"})
 		c.JSONP(http.StatusOK, data)
 	})
+
+	// Multipart/Urlencoded 绑定表单
+	r.POST("/login", func(c *gin.Context) {
+		// 你可以使用显式绑定声明绑定 multipart form：
+		// c.ShouldBindWith(&form, binding.Form)
+		// 或者简单地使用 ShouldBind 方法自动绑定：
+		var form LoginForm
+		// 在这种情况下，将自动选择合适的绑定
+		// post必须同时发送user/password两个参数才匹配
+		if c.ShouldBind(&form) == nil {
+			if form.User == "user" && form.Password == "password" {
+				c.JSON(200, gin.H{"status": "you are logged in"})
+			} else {
+				c.JSON(401, gin.H{"status": "unauthorized"})
+			}
+		}
+	})
+
 
 	return r
 }
