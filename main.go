@@ -2,17 +2,51 @@ package main
 
 import (
 	"fmt"
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/kakuilan/kgo"
+	"github.com/spf13/viper"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
-	"html/template"
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
-	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/kakuilan/kgo"
 )
 
-var db = make(map[string]string)
+var dbmap = make(map[string]string)
+
+var db *gorm.DB
+
+func init() {
+	//open a db connection
+	var err error
+
+	//载入配置
+	viper.SetConfigName("conf.yaml")
+	viper.AddConfigPath("./config")
+	err = viper.ReadInConfig() // Find and read the config file
+	if err != nil {            // Handle errors reading the config file
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+
+	//db, err = gorm.Open("mysql", "root:12345@/demo?charset=utf8&parseTime=True&loc=Local")
+	var conninfos = []string{}
+	conninfos = append(conninfos, viper.GetString("database.user"), ":")
+	conninfos = append(conninfos, viper.GetString("database.password"), "@tcp(")
+	conninfos = append(conninfos, viper.GetString("database.host"), ":")
+	conninfos = append(conninfos, viper.GetString("database.port"), ")/")
+	conninfos = append(conninfos, viper.GetString("database.dbname"), "?charset=")
+	conninfos = append(conninfos, viper.GetString("database.charset"), "&parseTime=True&loc=Local&readTimeout=500ms")
+	connstr := kgo.KArr.Implode("", conninfos)
+	//println(connstr)
+
+	//db, err = gorm.Open("mysql","name:password@ip:port/databasename?charset=utf8mb4&parseTime=True&loc=Local&readTimeout=500ms")
+	db, err = gorm.Open("mysql", connstr)
+	if err != nil {
+		panic("failed to connect database:" + err.Error())
+	}
+}
 
 func formatAsDate(t time.Time) string {
 	year, month, day := t.Date()
@@ -26,7 +60,7 @@ type LoginForm struct {
 }
 
 type UserClaims struct {
-	Uid int `json:"uid"`
+	Uid   int    `json:"uid"`
 	Agent string `json:"agent"`
 	jwt.StandardClaims
 }
@@ -46,7 +80,7 @@ func setupRouter() *gin.Engine {
 	// Get user value
 	r.GET("/user/:name", func(c *gin.Context) {
 		user := c.Params.ByName("name")
-		value, ok := db[user]
+		value, ok := dbmap[user]
 		if ok {
 			c.JSON(http.StatusOK, gin.H{"user": user, "value": value})
 		} else {
@@ -75,7 +109,7 @@ func setupRouter() *gin.Engine {
 		}
 
 		if c.Bind(&json) == nil {
-			db[user] = json.Value
+			dbmap[user] = json.Value
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
 		}
 	})
@@ -156,7 +190,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/json", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"html": "<b>Hello, world!</b>",
-			"cn": "<b>你好，世界！</b>",
+			"cn":   "<b>你好，世界！</b>",
 		})
 	})
 
@@ -164,7 +198,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/purejson", func(c *gin.Context) {
 		c.PureJSON(200, gin.H{
 			"html": "<b>Hello, world!</b>",
-			"cn": "<b>你好，世界！</b>",
+			"cn":   "<b>你好，世界！</b>",
 		})
 	})
 
@@ -185,13 +219,13 @@ func setupRouter() *gin.Engine {
 
 		str := fmt.Sprintf("id: %s; page: %s; name: %s; message: %s", id, page, name, message)
 		c.JSON(200, gin.H{
-			"str": str,
-			"id": id,
-			"page": page,
-			"name": name,
+			"str":     str,
+			"id":      id,
+			"page":    page,
+			"name":    name,
 			"message": message,
-			"ids": ids,
-			"names": names,
+			"ids":     ids,
+			"names":   names,
 		})
 	})
 
@@ -199,7 +233,7 @@ func setupRouter() *gin.Engine {
 	// 你也可以使用自己的 SecureJSON 前缀
 	// r.SecureJsonPrefix(")]}',\n")
 	r.GET("/SecureJSON", func(c *gin.Context) {
-		names := []string{"lena", "austin", "foo","<b>你好，世界！</b>"}
+		names := []string{"lena", "austin", "foo", "<b>你好，世界！</b>"}
 		// 将输出：while(1);["lena","austin","foo"]
 		c.SecureJSON(http.StatusOK, names)
 	})
@@ -210,17 +244,17 @@ func setupRouter() *gin.Engine {
 	r.POST("/upload", func(c *gin.Context) {
 		// 单文件
 		file, _ := c.FormFile("file")
-		if file==nil{
+		if file == nil {
 			c.JSON(200, gin.H{
 				"msg": "none upload file",
 			})
-		}else{
+		} else {
 			log.Println(file.Filename)
 
 			// 上传文件至指定目录
 			dst := "./" + file.Filename
 			err := c.SaveUploadedFile(file, dst)
-			if(err !=nil) {
+			if err != nil {
 				log.Print(err.Error())
 			}
 
@@ -229,15 +263,9 @@ func setupRouter() *gin.Engine {
 	})
 
 	// 读取yaml配置
-	viper.SetConfigName("conf.yaml")
-	viper.AddConfigPath("./config")
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
-	}
 	r.GET("/readyaml", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"all": viper.AllSettings(),
+			"all":      viper.AllSettings(),
 			"database": viper.GetStringMap("database"),
 		})
 	})
@@ -252,29 +280,29 @@ func setupRouter() *gin.Engine {
 		claims := UserClaims{
 			100,
 			agent,
-			jwt.StandardClaims {
-				ExpiresAt : time.Now().Add(time.Second * time.Duration(ttl)).Unix(),
+			jwt.StandardClaims{
+				ExpiresAt: time.Now().Add(time.Second * time.Duration(ttl)).Unix(),
 			},
 		}
 
 		tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		token, err := tokenClaims.SignedString([]byte(secret))
-		if err!=nil{
+		if err != nil {
 			c.JSON(200, gin.H{
 				"status": false,
 			})
-		}else{
+		} else {
 			c.JSON(200, gin.H{
 				"secret": secret,
-				"ttl": ttl,
-				"token": token,
+				"ttl":    ttl,
+				"token":  token,
 			})
 		}
 	})
 
 	// 解析jwt token
 	r.GET("/parsejwt", func(c *gin.Context) {
-		tokenStr,_ := c.GetQuery("token")
+		tokenStr, _ := c.GetQuery("token")
 		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 			// Don't forget to validate the alg is what you expect:
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -283,11 +311,11 @@ func setupRouter() *gin.Engine {
 
 			return []byte(viper.GetString("jwt.secret_key")), nil
 		})
-		if err!=nil{
+		if err != nil {
 			c.JSON(200, gin.H{
 				"status": false,
 			})
-		}else{
+		} else {
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 				//结果如 {"claims":{"agent":"6518ca917a5b5888","exp":1577950744,"uid":100}}
 				c.JSON(200, gin.H{
@@ -300,7 +328,6 @@ func setupRouter() *gin.Engine {
 			}
 		}
 	})
-
 
 	return r
 }
