@@ -8,6 +8,8 @@ import (
 	"html/template"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/kakuilan/kgo"
 )
 
 var db = make(map[string]string)
@@ -21,6 +23,12 @@ func formatAsDate(t time.Time) string {
 type LoginForm struct {
 	User     string `form:"user" binding:"required"`
 	Password string `form:"password" binding:"required"`
+}
+
+type UserClaims struct {
+	Uid int `json:"uid"`
+	Agent string `json:"agent"`
+	jwt.StandardClaims
 }
 
 func setupRouter() *gin.Engine {
@@ -234,6 +242,38 @@ func setupRouter() *gin.Engine {
 			"database": viper.GetStringMap("database"),
 		})
 	})
+
+	// 生成jwt token
+	r.GET("/createjwt", func(c *gin.Context) {
+		agent := c.GetHeader("User-Agent")
+		agent = kgo.KStr.Md5(agent, 16)
+		secret := viper.GetString("jwt.secret_key")
+		ttl := viper.GetInt64("jwt.token_ttl")
+
+		claims := UserClaims{
+			100,
+			agent,
+			jwt.StandardClaims {
+				ExpiresAt : time.Now().Add(time.Second * time.Duration(ttl)).Unix(),
+			},
+		}
+
+		tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		token, err := tokenClaims.SignedString([]byte(secret))
+		if err!=nil{
+			c.JSON(200, gin.H{
+				"status": false,
+			})
+		}else{
+			c.JSON(200, gin.H{
+				"secret": secret,
+				"ttl": ttl,
+				"token": token,
+			})
+		}
+	})
+
+
 
 	return r
 }

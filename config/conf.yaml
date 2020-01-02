@@ -23,3 +23,8 @@ redis:
 # log
 logs:
   log_max_files: 10
+
+# jwt
+jwt:
+  secret_key: 'JF!bG^H#Xf9qS#bK'
+  token_ttl: 3600
