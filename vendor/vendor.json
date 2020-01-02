@@ -135,11 +135,6 @@
 			"versionExact": "v0.0.1"
 		},
 		{
-			"path": "github.com/lcobucci/jwt",
-			"revision": "v3.2.0",
-			"version": "v3.2.0"
-		},
-		{
 			"checksumSHA1": "hVX8N8qDyG+pwAQj4gaxCrFtGt0=",
 			"path": "github.com/magiconair/properties",
 			"revision": "a586bb8b7deaae2a0eb4c6c8b63a539425628137",
