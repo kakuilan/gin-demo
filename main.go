@@ -272,6 +272,34 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	// 解析jwt token
+	r.GET("/parsejwt", func(c *gin.Context) {
+		tokenStr,_ := c.GetQuery("token")
+		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+			// Don't forget to validate the alg is what you expect:
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			return []byte(viper.GetString("jwt.secret_key")), nil
+		})
+		if err!=nil{
+			c.JSON(200, gin.H{
+				"status": false,
+			})
+		}else{
+			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+				//结果如 {"claims":{"agent":"6518ca917a5b5888","exp":1577950744,"uid":100}}
+				c.JSON(200, gin.H{
+					"claims": claims,
+				})
+			} else {
+				c.JSON(200, gin.H{
+					"status": false,
+				})
+			}
+		}
+	})
 
 
 	return r
