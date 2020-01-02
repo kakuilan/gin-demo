@@ -229,14 +229,13 @@ func setupRouter() *gin.Engine {
 	})
 
 	// 读取yaml配置
+	viper.SetConfigName("conf.yaml")
+	viper.AddConfigPath("./config")
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil { // Handle errors reading the config file
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 	r.GET("/readyaml", func(c *gin.Context) {
-		viper.SetConfigName("conf.yaml")
-		viper.AddConfigPath("./config")
-		err := viper.ReadInConfig() // Find and read the config file
-		if err != nil { // Handle errors reading the config file
-			panic(fmt.Errorf("Fatal error config file: %s \n", err))
-		}
-
 		c.JSON(200, gin.H{
 			"all": viper.AllSettings(),
 			"database": viper.GetStringMap("database"),
