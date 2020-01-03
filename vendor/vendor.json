@@ -63,6 +63,36 @@
 			"versionExact": "v1.4.0"
 		},
 		{
+			"checksumSHA1": "8GIRKJZ5AfTkExHI4YeGI42Nm0M=",
+			"path": "github.com/go-redis/redis",
+			"revision": "984a6395c99274cc2e086dfb514771f201ee1718",
+			"revisionTime": "2019-12-29T10:47:23Z"
+		},
+		{
+			"path": "github.com/go-redis/redis/v7/internal",
+			"revision": "984a6395c99274cc2e086dfb514771f201ee1718"
+		},
+		{
+			"path": "github.com/go-redis/redis/v7/internal/consistenthash",
+			"revision": "984a6395c99274cc2e086dfb514771f201ee1718"
+		},
+		{
+			"path": "github.com/go-redis/redis/v7/internal/hashtag",
+			"revision": "984a6395c99274cc2e086dfb514771f201ee1718"
+		},
+		{
+			"path": "github.com/go-redis/redis/v7/internal/pool",
+			"revision": "984a6395c99274cc2e086dfb514771f201ee1718"
+		},
+		{
+			"path": "github.com/go-redis/redis/v7/internal/proto",
+			"revision": "984a6395c99274cc2e086dfb514771f201ee1718"
+		},
+		{
+			"path": "github.com/go-redis/redis/v7/internal/util",
+			"revision": "984a6395c99274cc2e086dfb514771f201ee1718"
+		},
+		{
 			"checksumSHA1": "yg01DVQJjQgMeXf9C7Fpl2Yo5+Y=",
 			"path": "github.com/go-sql-driver/mysql",
 			"revision": "72cd26f257d44c1114970e19afddcd812016007e",

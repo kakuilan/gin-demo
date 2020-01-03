@@ -4,6 +4,7 @@ import (
 	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	. "github.com/kakuilan/kgo"
@@ -17,6 +18,7 @@ import (
 var dbmap = make(map[string]string)
 
 var db *gorm.DB
+var redisClt *redis.Client
 
 //数据表模型
 type TestModel struct {
@@ -60,8 +62,22 @@ func init() {
 	//db, err = gorm.Open("mysql","name:password@ip:port/databasename?charset=utf8mb4&parseTime=True&loc=Local&readTimeout=500ms")
 	db, err = gorm.Open("mysql", connstr)
 	if err != nil {
-		panic("failed to connect database:" + err.Error())
+		panic("failed to connect mysql:" + err.Error())
 	}
+
+	//redis client
+	redAddr := viper.GetString("redis.host") + ":" + viper.GetString("redis.port")
+	redisClt = redis.NewClient(&redis.Options{
+		Addr:     redAddr,
+		Password: viper.GetString("redis.password"),
+		DB:       viper.GetInt("redis.select"),
+	})
+
+	_, err = redisClt.Ping().Result()
+	if err != nil {
+		panic("failed to connect redis:" + err.Error())
+	}
+
 }
 
 func formatAsDate(t time.Time) string {
@@ -429,6 +445,25 @@ func setupRouter() *gin.Engine {
 		c.JSON(200, gin.H{
 			"status": "OK",
 		})
+	})
+
+	// redis操作
+	r.GET("/redis", func(c *gin.Context) {
+		err := redisClt.Set("key1", "value1", 0).Err()
+		if err != nil {
+			panic(err)
+		}
+		val, err := redisClt.Get("key1").Result()
+		if err != nil {
+			panic(err)
+		}
+		val2, err := redisClt.Get("key2").Result()
+
+		c.JSON(200, gin.H{
+			"val":  val,
+			"val2": val2,
+		})
+		redisClt.FlushDB()
 	})
 
 	return r
