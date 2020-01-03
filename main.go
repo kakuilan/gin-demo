@@ -381,6 +381,28 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	// db-查找记录结果集
+	r.GET("/dbgets", func(c *gin.Context) {
+		var res []TestModel
+		db.Find(&res)
+		c.JSON(200, res)
+	})
+
+	// db-查找某个记录
+	r.GET("/dbgets/:id", func(c *gin.Context) {
+		// id := KConv.Str2Int(c.Param("id"))
+	})
+
+	// db-更新记录
+	r.PUT("/dbupdate/:id", func(c *gin.Context) {
+		// id := KConv.Str2Int(c.Param("id"))
+	})
+
+	// db-删除记录
+	r.DELETE("/dbdel/:id", func(c *gin.Context) {
+		// id := KConv.Str2Int(c.Param("id"))
+	})
+
 	return r
 }
 
