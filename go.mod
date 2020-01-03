@@ -7,6 +7,8 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gin-contrib/sse v0.0.0-20190905051334-43f0f29dbd2b
 	github.com/gin-gonic/gin v0.0.0-20190507114305-b75d67cd51eb
+	github.com/go-redis/redis v6.15.6+incompatible // indirect
+	github.com/go-redis/redis/v7 v7.0.0-beta.4 // indirect
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/golang/protobuf v1.3.1
 	github.com/hashicorp/hcl v1.0.0
