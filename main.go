@@ -390,7 +390,17 @@ func setupRouter() *gin.Engine {
 
 	// db-查找某个记录
 	r.GET("/dbgets/:id", func(c *gin.Context) {
-		// id := KConv.Str2Int(c.Param("id"))
+		id := KConv.Str2Int(c.Param("id"))
+
+		// 使用主键获取记录
+		res1 := db.First(&TestModel{}, id)
+
+		// 条件查询
+		res2 := db.Where("ID = ?", id).First(&TestModel{})
+		c.JSON(200, gin.H{
+			"res1": res1,
+			"res2": res2,
+		})
 	})
 
 	// db-更新记录
