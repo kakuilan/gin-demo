@@ -405,7 +405,21 @@ func setupRouter() *gin.Engine {
 
 	// db-更新记录
 	r.PUT("/dbupdate/:id", func(c *gin.Context) {
-		// id := KConv.Str2Int(c.Param("id"))
+		id := KConv.Str2Int(c.Param("id"))
+
+		var info TestModel
+		e := db.First(&info, id).Error
+		if e != nil {
+			c.JSON(200, gin.H{
+				"status": false,
+				"msg":    "记录不存在",
+			})
+		} else {
+			info.Name = KStr.Random(10, RAND_STRING_ALPHANUM)
+			info.UpdateTime = KTime.Time()
+			db.Save(&info)
+			c.JSON(200, &info)
+		}
 	})
 
 	// db-删除记录
