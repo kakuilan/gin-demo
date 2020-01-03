@@ -424,7 +424,11 @@ func setupRouter() *gin.Engine {
 
 	// db-删除记录
 	r.DELETE("/dbdel/:id", func(c *gin.Context) {
-		// id := KConv.Str2Int(c.Param("id"))
+		id := KConv.Str2Int(c.Param("id"))
+		db.Where("ID = ?", id).Delete(TestModel{})
+		c.JSON(200, gin.H{
+			"status": "OK",
+		})
 	})
 
 	return r
