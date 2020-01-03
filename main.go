@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/kakuilan/kgo"
+	. "github.com/kakuilan/kgo"
 	"github.com/spf13/viper"
 	"html/template"
 	"log"
@@ -17,6 +17,22 @@ import (
 var dbmap = make(map[string]string)
 
 var db *gorm.DB
+
+//数据表模型
+type TestModel struct {
+	// 注意,不要继承gorm.Model
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Age        int8   `json:"age"`
+	Sign       string `json:"sign"`
+	CreateTime int64  `json:"create_time"`
+	UpdateTime int64  `json:"update_time"`
+}
+
+// 设置TestModel的表名为`tests`
+func (TestModel) TableName() string {
+	return "tests"
+}
 
 func init() {
 	//open a db connection
@@ -38,7 +54,7 @@ func init() {
 	conninfos = append(conninfos, viper.GetString("database.port"), ")/")
 	conninfos = append(conninfos, viper.GetString("database.dbname"), "?charset=")
 	conninfos = append(conninfos, viper.GetString("database.charset"), "&parseTime=True&loc=Local&readTimeout=500ms")
-	connstr := kgo.KArr.Implode("", conninfos)
+	connstr := KArr.Implode("", conninfos)
 	//println(connstr)
 
 	//db, err = gorm.Open("mysql","name:password@ip:port/databasename?charset=utf8mb4&parseTime=True&loc=Local&readTimeout=500ms")
@@ -273,7 +289,7 @@ func setupRouter() *gin.Engine {
 	// 生成jwt token
 	r.GET("/createjwt", func(c *gin.Context) {
 		agent := c.GetHeader("User-Agent")
-		agent = kgo.KStr.Md5(agent, 16)
+		agent = KStr.Md5(agent, 16)
 		secret := viper.GetString("jwt.secret_key")
 		ttl := viper.GetInt64("jwt.token_ttl")
 
@@ -326,6 +342,42 @@ func setupRouter() *gin.Engine {
 					"status": false,
 				})
 			}
+		}
+	})
+
+	// db-新增记录
+	r.POST("/dbadd", func(c *gin.Context) {
+		name := KStr.Trim(c.PostForm("name"))
+		age := KConv.Str2Int8(c.PostForm("age"))
+		sign := c.PostForm("sign")
+		now := KTime.Time()
+
+		if KConv.IsEmpty(name) {
+			c.JSON(200, gin.H{
+				"status": false,
+				"msg":    "name不能为空",
+			})
+			return
+		}
+
+		newTest := &TestModel{
+			Name:       name,
+			Age:        age,
+			Sign:       sign,
+			CreateTime: now,
+			UpdateTime: now,
+		}
+		db.Create(newTest)
+		if newTest.ID > 0 {
+			c.JSON(200, gin.H{
+				"status": true,
+				"obj":    newTest,
+			})
+		} else {
+			c.JSON(200, gin.H{
+				"status": false,
+				"msg":    "新增失败",
+			})
 		}
 	})
 

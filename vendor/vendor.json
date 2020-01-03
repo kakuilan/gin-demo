@@ -145,6 +145,12 @@
 			"versionExact": "v1.9.11"
 		},
 		{
+			"checksumSHA1": "eECxSkwh0WmhLwaxHfkvcLOWS08=",
+			"path": "github.com/jinzhu/gorm/dialects/mysql",
+			"revision": "79a77d771dee4e4b60e9c543e8663bbc80466670",
+			"revisionTime": "2019-12-06T14:22:28Z"
+		},
+		{
 			"checksumSHA1": "iqeSAF7imnVsW+iqLqf6kkYn1VU=",
 			"path": "github.com/jinzhu/inflection",
 			"revision": "f5c5f50e6090ae76a29240b61ae2a90dd810112e",
