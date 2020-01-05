@@ -24,6 +24,7 @@ var redisClt *redis.Client
 type TestModel struct {
 	// 注意,不要继承gorm.Model
 	ID         int    `json:"id"`
+	IsDel      int8   `json:"is_del"`
 	Name       string `json:"name"`
 	Age        int8   `json:"age"`
 	Sign       string `json:"sign"`
@@ -64,6 +65,8 @@ func init() {
 	if err != nil {
 		panic("failed to connect mysql:" + err.Error())
 	}
+	db.Callback().Create().Remove("gorm:update_time_stamp")
+	db.Callback().Update().Remove("gorm:update_time_stamp")
 
 	//redis client
 	redAddr := viper.GetString("redis.host") + ":" + viper.GetString("redis.port")
